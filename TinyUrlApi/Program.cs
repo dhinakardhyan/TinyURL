@@ -8,17 +8,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowReact",
+//        policy => policy
+//            .WithOrigins("http://localhost:5173")
+//            .AllowAnyMethod()
+//            .AllowAnyHeader());
+//});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
         policy => policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://zealous-dune-036b78200.7.azurestaticapps.net"
+            )
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-
-
-// Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer("Server=.;Database=TinyUrlDb;Trusted_Connection=True;TrustServerCertificate=True"));
 
