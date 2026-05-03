@@ -28,9 +28,12 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer("Server=.;Database=TinyUrlDb;Trusted_Connection=True;TrustServerCertificate=True"));
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer("Server=.;Database=TinyUrlDb;Trusted_Connection=True;TrustServerCertificate=True"));
 
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=tinyurl.db"));
 
 
 var app = builder.Build();
