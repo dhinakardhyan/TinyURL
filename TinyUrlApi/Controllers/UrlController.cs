@@ -6,7 +6,7 @@ using TinyUrlApi.Models;
 
 namespace TinyUrlApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class UrlController : ControllerBase
     {
