@@ -12,17 +12,17 @@ namespace TinyUrlApi.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
-        public UrlController(AppDbContext context,IConfiguration config)
+        public UrlController(AppDbContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
         }
 
         [HttpGet("public")]
-        public async Task<IActionResult>GetPublicUrls()
+        public async Task<IActionResult> GetPublicUrls()
         {
             var urls = await _context.Urls
-                         .Where(x => x.IsPrivate==false)
+                         .Where(x => x.IsPrivate == false)
                          .Select(x => new
                          {
                              x.Id,
@@ -37,7 +37,29 @@ namespace TinyUrlApi.Controllers
 
 
 
-      
+        [HttpGet("/r/{shortCode}")]
+        public async Task<IActionResult> RedirectToOriginal(string shortCode, [FromQuery] string? token)
+        {
+            var url = await _context.Urls
+                .FirstOrDefaultAsync(x => x.ShortCode == shortCode);
+
+            if (url == null)
+                return NotFound("Short URL not found");
+
+            if (url.IsPrivate)
+            {
+                var validToken = _config["AppSettings:SecretToken"];
+
+                if (token != validToken)
+                    return Unauthorized("Private URL");
+            }
+
+            url.Clicks++;
+            await _context.SaveChangesAsync();
+
+            return Redirect(url.OriginalUrl);
+        }
+
 
         [HttpPost("shorten")]
         public async Task<IActionResult> CreateShortUrl([FromBody] Url url)
@@ -63,7 +85,37 @@ namespace TinyUrlApi.Controllers
                 .Select(x => chars[random.Next(chars.Length)]).ToArray());
         }
 
-       
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchUrls(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return BadRequest("Searched word is required");
+            }
+            var results = await _context.Urls
+                .Where(x => x.ShortCode.Contains(query.ToLower()) || x.OriginalUrl.Contains(query.ToLower()))
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ShortCode,
+                    x.OriginalUrl,
+                    x.Clicks
+                })
+                .ToListAsync();
+
+            return Ok(new { success = true, data = results });
+        }
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> DeleteUrl(int id)
+        {
+            var url = await _context.Urls.FindAsync(id);
+            if (url == null)
+                return NotFound("Url Not Found");
+
+            _context.Urls.Remove(url);
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Url Deleted Succesfully" });
+        }
 
 
     }
