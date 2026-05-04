@@ -25,6 +25,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "https://zealous-dune-036b78200.7.azurestaticapps.net"
             )
+             .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
